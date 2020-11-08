@@ -20,10 +20,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MBED_TEXTLCD_H
-#define MBED_TEXTLCD_H
+#pragma once
 
-#include "mbed.h"
+#include <mbed.h>
 
 /**  A TextLCD interface for driving 4-bit HD44780-based LCDs
  *
@@ -40,11 +39,10 @@
  * }
  * @endcode
  */
-class TextLCD : public Stream {
+class TextLCD {
 public:
-
     /** LCD panel format */
-    enum LCDType {
+    enum class LCDType {
         LCD16x2     /**< 16x2 LCD panel (default) */
         , LCD16x2B  /**< 16x2 LCD panel alternate addressing */
         , LCD20x2   /**< 20x2 LCD panel */
@@ -58,22 +56,13 @@ public:
      * @param d4-d7 Data lines for using as a 4-bit interface
      * @param type  Sets the panel size/addressing mode (default = LCD16x2)
      */
-    TextLCD(PinName rs, PinName e, PinName d4, PinName d5, PinName d6, PinName d7, LCDType type = LCD16x2);
+    TextLCD(PinName rs, PinName e, PinName d4, PinName d5, PinName d6, PinName d7, LCDType type = LCDType::LCD16x2);
 
-#if DOXYGEN_ONLY
     /** Write a character to the LCD
      *
      * @param c The character to write to the display
      */
     int putc(int c);
-
-    /** Write a formated string to the LCD
-     *
-     * @param format A printf-style format string, followed by the
-     *               variables to use in formating the string.
-     */
-    int printf(const char* format, ...);
-#endif
 
     /** Locate to a screen column and row
      *
@@ -85,14 +74,11 @@ public:
     /** Clear the screen and locate to 0,0 */
     void cls();
 
-    int rows();
-    int columns();
+    int rows() const;
+    int columns() const;
 
 protected:
-
-    // Stream implementation functions
-    virtual int _putc(int value);
-    virtual int _getc();
+    int _putc(int value);
 
     int address(int column, int row);
     void character(int column, int row, int c);
@@ -107,5 +93,3 @@ protected:
     int _column;
     int _row;
 };
-
-#endif

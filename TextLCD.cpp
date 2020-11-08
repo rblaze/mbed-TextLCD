@@ -31,15 +31,15 @@ TextLCD::TextLCD(PinName rs, PinName e, PinName d4, PinName d5,
     _e  = 1;
     _rs = 0;            // command mode
 
-    wait(0.015);        // Wait 15ms to ensure powered up
+    ThisThread::sleep_for(15ms);        // Wait 15ms to ensure powered up
 
     // send "Display Settings" 3 times (Only top nibble of 0x30 as we've got 4-bit bus)
     for (int i=0; i<3; i++) {
         writeByte(0x3);
-        wait(0.00164);  // this command takes 1.64ms, so wait for it
+        ThisThread::sleep_for(2ms);  // this command takes 1.64ms, so wait for it
     }
     writeByte(0x2);     // 4-bit mode
-    wait(0.000040f);    // most instructions take 40us
+    wait_us(40);    // most instructions take 40us
 
     writeCommand(0x28); // Function set 001 BW N F - -
     writeCommand(0x0C);
@@ -55,7 +55,7 @@ void TextLCD::character(int column, int row, int c) {
 
 void TextLCD::cls() {
     writeCommand(0x01); // cls, and set cursor to 0
-    wait(0.00164f);     // This command takes 1.64 ms
+    ThisThread::sleep_for(2ms);     // This command takes 1.64 ms
     locate(0, 0);
 }
 
@@ -85,20 +85,16 @@ int TextLCD::_putc(int value) {
     return value;
 }
 
-int TextLCD::_getc() {
-    return -1;
-}
-
 void TextLCD::writeByte(int value) {
     _d = value >> 4;
-    wait(0.000040f); // most instructions take 40us
+    wait_us(40); // most instructions take 40us
     _e = 0;
-    wait(0.000040f);
+    wait_us(40);
     _e = 1;
     _d = value >> 0;
-    wait(0.000040f);
+    wait_us(40);
     _e = 0;
-    wait(0.000040f);  // most instructions take 40us
+    wait_us(40);  // most instructions take 40us
     _e = 1;
 }
 
@@ -113,8 +109,12 @@ void TextLCD::writeData(int data) {
 }
 
 int TextLCD::address(int column, int row) {
+  MBED_ASSERT(column >= 0);
+  MBED_ASSERT(column < columns());
+  MBED_ASSERT(row >= 0);
+  MBED_ASSERT(row < rows());
     switch (_type) {
-        case LCD20x4:
+      case LCDType::LCD20x4:
             switch (row) {
                 case 0:
                     return 0x80 + column;
@@ -123,36 +123,37 @@ int TextLCD::address(int column, int row) {
                 case 2:
                     return 0x94 + column;
                 case 3:
+        default:
                     return 0xd4 + column;
             }
-        case LCD16x2B:
+      case LCDType::LCD16x2B:
             return 0x80 + (row * 40) + column;
-        case LCD16x2:
-        case LCD20x2:
+      case LCDType::LCD16x2:
+      case LCDType::LCD20x2:
         default:
             return 0x80 + (row * 0x40) + column;
     }
 }
 
-int TextLCD::columns() {
+int TextLCD::columns() const {
     switch (_type) {
-        case LCD20x4:
-        case LCD20x2:
+      case LCDType::LCD20x4:
+      case LCDType::LCD20x2:
             return 20;
-        case LCD16x2:
-        case LCD16x2B:
+      case LCDType::LCD16x2:
+      case LCDType::LCD16x2B:
         default:
             return 16;
     }
 }
 
-int TextLCD::rows() {
+int TextLCD::rows() const {
     switch (_type) {
-        case LCD20x4:
+      case LCDType::LCD20x4:
             return 4;
-        case LCD16x2:
-        case LCD16x2B:
-        case LCD20x2:
+      case LCDType::LCD16x2:
+      case LCDType::LCD16x2B:
+      case LCDType::LCD20x2:
         default:
             return 2;
     }
