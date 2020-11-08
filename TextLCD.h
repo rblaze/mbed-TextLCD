@@ -80,8 +80,6 @@ public:
   int columns() const;
 
 protected:
-  int _putc(int value);
-
   int address(int column, int row);
   void character(int column, int row, int c);
   void writeByte(int value);

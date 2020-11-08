@@ -66,7 +66,7 @@ void TextLCD::locate(int column, int row) {
   _row = row;
 }
 
-int TextLCD::_putc(int value) {
+int TextLCD::putc(int value) {
   if (value == '\n') {
     _column = 0;
     _row++;
@@ -84,6 +84,7 @@ int TextLCD::_putc(int value) {
       }
     }
   }
+
   return value;
 }
 
